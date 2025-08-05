@@ -10,13 +10,19 @@ pokemons=("Bulbasaur" "Ivysaur" "Venusaur" "Charmander" "Charmeleon")
 echo '["bulbasaur", "ivysaur", "venusaur", "charmander", "charmeleon"]'
 for pokemon in "${pokemons[@]}"
 do
+#  making request to each pokemon
+echo "Fetching data for ${pokemon}..."
 status_code=$(curl "https://pokeapi.co/api/v2/pokemon/${pokemon}" -s -w"%{http_code}" -o temp)
 if [[ $status_code -eq 200 ]]
 then
+#  if successful save the response to a file
+echo "Saved data to ${pokemon}.json ✅"
 mv temp ${pokemon}.json
 elif [[ $status_code -ne 200 ]]
 then
+#  if it fails save error message to appropriate file
 mv temp ${pokemon}_errors.txt
 fi
+#  sleep to avoid rate limiting
 sleep 5
 done
