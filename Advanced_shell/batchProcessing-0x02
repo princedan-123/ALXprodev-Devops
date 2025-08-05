@@ -1,0 +1,20 @@
+#!/bin/bash
+#  A shell script that automates the process of making api request in batches.
+
+#  create a temp file to temporary hold the result
+touch temp
+pokemons=("Bulbasaur" "Ivysaur" "Venusaur" "Charmander" "Charmeleon")
+
+#  make http GET request for each pokemon
+for pokemon in "${pokemons[@]}"
+do
+status_code=$(curl "https://pokeapi.co/api/v2/pokemon/${pokemon}" -s -w"%{http_code}" -o temp)
+if [[ $status_code -eq 200 ]]
+then
+mv temp ${pokemon}.json
+elif [[ $status_code -ne 200 ]]
+then
+mv temp ${pokemon}_errors.txt
+fi
+sleep 5
+done
