@@ -5,5 +5,5 @@
 name=$(jq .name data.json)
 height=$(jq .height data.json)
 weight=$(jq .weight data.json)
-type=$(jq .types[0].type.name data.json)
+type=$(jq .types[0].type.name data.json | sed 's/"//g')
 echo "Pikachu is of type ${type}, weighs ${weight}kg, and is ${height}m tall."
