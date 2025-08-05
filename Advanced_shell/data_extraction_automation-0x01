@@ -1,0 +1,9 @@
+#!/bin/bash
+#  A shell script that extracts fields from an API JSON response
+#  The script assumes the data.json file exists and it contains a valid json data
+
+name=$(jq .name data.json)
+height=$(jq .height data.json)
+weight=$(jq .weight data.json)
+type=$(jq .types[0].type.name data.json)
+echo "Pikachu is of type ${type}, weighs ${weight}kg, and is ${height}m tall."
