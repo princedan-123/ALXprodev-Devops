@@ -1,0 +1,14 @@
+#!/bin/bash
+#  A shell script that automates the process of making api request.
+
+#  create a temp file to temporary hold the result
+touch temp
+status_code=$(curl https://pokeapi.co/api/v2/pokemon/25 -s -w"%{http_code}" -o temp)
+
+if [[ $status_code -eq 200 ]]
+then
+mv temp data.json
+elif [[ $status_code -ne 200 ]]
+then
+mv temp errors.txt
+fi
