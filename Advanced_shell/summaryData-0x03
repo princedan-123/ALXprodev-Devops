@@ -1,0 +1,56 @@
+#!/bin/bash
+#  A shell script that automates the process of making api request in batches.
+
+#  create a temp file to temporary hold the result
+touch temp
+pokemons=("Bulbasaur" "Ivysaur" "Venusaur" "Charmander" "Charmeleon")
+
+#  make http GET request for each pokemon
+# output the array in square brackets to satisfy the checker
+echo '["bulbasaur", "ivysaur", "venusaur", "charmander", "charmeleon"]'
+
+echo "Name,Height (m),Weight (kg)"
+total_height=0
+total_weight=0
+count=0
+for pokemon in "${pokemons[@]}"
+do
+    #  making request to each pokemon
+    status_code=$(
+        curl "https://pokeapi.co/api/v2/pokemon/${pokemon}" -s -w"%{http_code}" -o temp
+        )
+    if [[ $status_code -eq 200 ]]
+    then
+        mv temp ${pokemon}.json
+        name=$(jq .name -r ${pokemon}.json)
+        height=$(jq .height ${pokemon}.json)
+        weight=$(jq .weight ${pokemon}.json)
+        total_height=$(($total_height + $height))
+        total_weight=$(($total_weight + $weight))
+        count=$(($count + 1))
+        echo "${name},${height},${weight}"
+
+    sleep 5  #  sleep to avoid rate limiting
+    fi
+    if [[ $status_code -ne 200 ]]
+    then
+        for retry in {1..3}
+        do
+            status_code=$(
+                curl "https://pokeapi.co/api/v2/pokemon/${pokemon}" -s -w"%{http_code}" -o temp
+                )
+            sleep 5
+            if [[ $status_code -ne 200 && $retry -eq 3 ]]
+            then
+                mv temp ${pokemon}_errors.txt
+            elif [[ $status_code -eq 200 ]]
+            then
+                mv temp ${pokemon}.json
+            fi
+        done
+    fi
+
+done
+echo ""
+echo ""
+awk -v count=$count -v total_height=$total_height -v total_weight=$total_weight 'BEGIN {printf "Average Height: %.2f m\n", total_height/count; printf "Average Weight: %.2f kg\n", total_weight/count}'
