@@ -6,4 +6,4 @@ name=$(jq .name data.json)
 formatted_height=$(jq .height data.json)
 formatted_weight=$(jq .weight data.json)
 type=$(jq .types[0].type.name data.json | sed 's/"//g' | awk '{ print toupper(substr($1, 1, 1)) tolower(substr($1, 2))}')
-echo "${name} is of type ${type}, weighs ${formatted_weight}kg, and is ${formatted_height}m tall."
+echo "$name is of type $type, weighs ${formatted_weight}kg, and is ${formatted_height}m tall."
