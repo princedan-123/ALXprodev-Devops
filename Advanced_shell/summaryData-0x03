@@ -8,8 +8,14 @@ pokemons=("Bulbasaur" "Ivysaur" "Venusaur" "Charmander" "Charmeleon")
 #  make http GET request for each pokemon
 # output the array in square brackets to satisfy the checker
 echo '["bulbasaur", "ivysaur", "venusaur", "charmander", "charmeleon"]'
-
-echo "Name,Height (m),Weight (kg)"
+#  create a .csv file if it does not exist.
+if [[ -e data.csv ]]
+then 
+    echo "file already exist"
+else
+    touch data.csv
+fi
+echo "Name,Height (m),Weight (kg)" >> data.csv
 total_height=0
 total_weight=0
 count=0
@@ -28,7 +34,7 @@ do
         total_height=$(($total_height + $height))
         total_weight=$(($total_weight + $weight))
         count=$(($count + 1))
-        echo "${name},${height},${weight}"
+        echo "${name},${height},${weight}" >> data.csv
 
     sleep 5  #  sleep to avoid rate limiting
     fi
@@ -51,6 +57,9 @@ do
     fi
 
 done
-echo ""
-echo ""
-awk -v count=$count -v total_height=$total_height -v total_weight=$total_weight 'BEGIN {printf "Average Height: %.2f m\n", total_height/count; printf "Average Weight: %.2f kg\n", total_weight/count}'
+echo "" >> data.csv
+echo "" >> data.csv
+
+awk -v count=$count -v total_height=$total_height -v total_weight=$total_weight 'BEGIN {printf "Average Height: %.2f m\n", total_height/count; printf "Average Weight: %.2f kg\n", total_weight/count}' >> data.csv
+
+sed '' data.csv
