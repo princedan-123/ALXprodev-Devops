@@ -8,21 +8,40 @@ pokemons=("Bulbasaur" "Ivysaur" "Venusaur" "Charmander" "Charmeleon")
 #  make http GET request for each pokemon
 # output the array in square brackets to satisfy the checker
 echo '["bulbasaur", "ivysaur", "venusaur", "charmander", "charmeleon"]'
+
 for pokemon in "${pokemons[@]}"
 do
-#  making request to each pokemon
-echo "Fetching data for ${pokemon}..."
-status_code=$(curl "https://pokeapi.co/api/v2/pokemon/${pokemon}" -s -w"%{http_code}" -o temp)
-if [[ $status_code -eq 200 ]]
-then
-#  if successful save the response to a file
-echo "Saved data to ${pokemon}.json ✅"
-mv temp ${pokemon}.json
-elif [[ $status_code -ne 200 ]]
-then
-#  if it fails save error message to appropriate file
-mv temp ${pokemon}_errors.txt
-fi
-#  sleep to avoid rate limiting
-sleep 5
+    #  making request to each pokemon
+
+    echo "Fetching data for ${pokemon}..."
+    status_code=$(
+        curl "https://pokeapi.co/api/v2/pokemon/${pokemon}" -s -w"%{http_code}" -o temp
+        )
+    if [[ $status_code -eq 200 ]]
+    then
+        echo "Saved data to ${pokemon}.json ✅"
+        mv temp ${pokemon}.json
+    sleep 5  #  sleep to avoid rate limiting
+    fi
+    if [[ $status_code -ne 200 ]]
+    then
+        for retry in {1..3}
+        do
+            echo "retrying request $retry"
+            status_code=$(
+                curl "https://pokeapi.co/api/v2/pokemon/${pokemon}" -s -w"%{http_code}" -o temp
+                )
+            sleep 5
+            if [[ $status_code -ne 200 && $retry -eq 3 ]]
+            then
+                echo $(cat temp)
+                mv temp ${pokemon}_errors.txt
+            elif [[ $status_code -eq 200 ]]
+            then
+                echo "Saved data to ${pokemon}.json ✅"
+                mv temp ${pokemon}.json
+            fi
+        done
+    fi
+
 done
